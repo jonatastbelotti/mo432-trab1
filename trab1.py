@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 # DEFINIÇÕES
@@ -11,6 +14,7 @@ COLUNAS_NUMERICAS = ["Year", "Present_Price", "Kms_Driven", "Owner"]
 COLUNAS_CATEGORICAS = ["Car_Name", "Fuel_Type", "Seller_Type", "Transmission"]
 COLUNAS_ENTRADAS = COLUNAS_CATEGORICAS + COLUNAS_NUMERICAS
 COLUNA_SAIDA = "Selling_Price"
+REPETICOES_VALIDACAO_CRUZADA = 5
 
 
 # Função que carrega os dados do arquivo CVS
@@ -75,6 +79,7 @@ def centring_scaling(dados):
     O StandardScaler já aplica o Centering e o Scaling
     https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
     '''
+    # # Dessa forma faz o centering and standard apenas para os valores numéricos
     # numericos = dados[:, :len(COLUNAS_NUMERICAS)]
     # categoricos = dados[:, len(COLUNAS_NUMERICAS):]
     # scaler = StandardScaler()
@@ -82,6 +87,7 @@ def centring_scaling(dados):
     # numericos = scaler.transform(numericos)
     # return np.concatenate((numericos, categoricos), axis=1)
 
+    # Dessa forma faz o centering and standard para todos os atributos de entrada
     scaler = StandardScaler()
     scaler.fit(dados)
     return scaler.transform(dados)
@@ -97,7 +103,6 @@ def plotar_grafico_pca(valores):
     plt.title("Componentes príncipais segundo PCA", fontweight='regular', color = 'black', fontsize='13', horizontalalignment='center')
     plt.xlabel('Número de componentes', fontweight='regular', color = 'black', fontsize='13', horizontalalignment='center')
     plt.ylabel('Variância acumulada', fontweight='regular', color = 'black', fontsize='13', horizontalalignment='center')
-    plt.rcParams["figure.figsize"] = (16,9)
 
     plt.savefig("./grafico-pca.png", dpi=300)
 
@@ -123,8 +128,8 @@ def reduzir_dimensionalidade(dados):
     # Plotando gráfico com a variância acumulada
     plotar_grafico_pca(valores)
 
-    # Reduzindo dimensionalidade para representar 90% das amostras
-    pca = PCA(0.9)
+    # Reduzindo dimensionalidade para 10 atributos
+    pca = PCA(n_components=10)
     pca.fit(dados)
     resp = pca.transform(dados)
 
@@ -133,6 +138,32 @@ def reduzir_dimensionalidade(dados):
     return resp
 
 
+# Validação cruzada e regressão linear
+def aplicar_regressao(entradas, saidas):
+    '''
+    Fazendo 5 repetições de uma validação cruzada aleatória com split de 70/30 (70% treino 30% teste).
+    '''
+    print("\nAplicando validação cruzada")
+    valores_rmse = list()
+    valores_mae = list()
+
+    for i in range(REPETICOES_VALIDACAO_CRUZADA):
+        # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
+        entradas_treino, entradas_teste, saidas_treino, saidas_teste = train_test_split(entradas, saidas, test_size=0.3)
+
+        # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
+        regressao = LinearRegression().fit(entradas_treino, saidas_treino)
+
+        resultado_teste = regressao.predict(entradas_teste)
+        rmse = mean_squared_error(saidas_teste, resultado_teste, squared=False)
+        mae = mean_absolute_error(saidas_teste, resultado_teste)
+        valores_rmse.append(rmse)
+        valores_mae.append(mae)
+
+        print(" (%d) RMSE = %.6f; MAE = %.6f" % (i+1, rmse, mae))
+    
+    print("\n Média RMSE = %.6f" % (np.mean(valores_rmse)))
+    print(" Média MAE = %.6f" % (np.mean(valores_mae)))
 
 
 # CÓDIGO PRINCIPAL
@@ -150,8 +181,9 @@ if __name__ == "__main__":
     # Centering and scaling
     entradas = centring_scaling(entradas)
 
-    # reduza a dimensionalidade dos atributos de entrada usando PCA.
+    # Reduza a dimensionalidade dos atributos de entrada usando PCA.
     entradas = reduzir_dimensionalidade(entradas)
 
+    # Validação cruzada e regressão linear
+    aplicar_regressao(entradas, saidas)
 
-    aaaaaa = 1
