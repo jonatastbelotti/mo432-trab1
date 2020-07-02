@@ -2,11 +2,11 @@ Foram lidas 301 linhas com 9 colunas
 A dimensionalidade foi reduzida de 109 para 10 atributos
 
 Aplicando validação cruzada
- (1) RMSE = 2.794164; MAE = 1.778642
- (2) RMSE = 3.257739; MAE = 2.004830
- (3) RMSE = 2.255368; MAE = 1.533556
- (4) RMSE = 2.704185; MAE = 1.693346
- (5) RMSE = 2.587820; MAE = 1.576046
+ (1) RMSE = 2.599543; MAE = 1.662949
+ (2) RMSE = 1.527589; MAE = 1.169432
+ (3) RMSE = 2.732607; MAE = 1.878950
+ (4) RMSE = 2.334098; MAE = 1.405526
+ (5) RMSE = 1.886773; MAE = 1.417125
 
- Média RMSE = 2.719855
- Média MAE = 1.717284
+ Média RMSE = 2.216122
+ Média MAE = 1.506796
